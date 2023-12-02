@@ -3,6 +3,68 @@
 
 ## Estas páginas de error se pueden modificar:
 1. Dentro del directorio de nuestro sitio creamos una carpeta llamada error
+``````
     $ mkdir /var/www/apache2/error
-2. Dentro de esa carpeta creamos el documento con el html correspondiente a ese error
-    $ echo /var/www/apache2/error >> ...codigo html para la página...
+``````
+2. Dentro de esa carpeta creamos el documento con el html correspondiente a ese error:
+``````
+    $ echo "codigo html para la página" >> /var/www/apache2/error/nombre_pag.html 
+``````
+* Podemos tener una página html para cada tipo de error
+
+3. En la directiva DocumentRoot del sitio añadimos el codigo de error y su directorio correspondiente:
+``````
+    $ nano /etc/apache2/sites-available/nombre_sitio.conf
+``````
+``````
+DocumentRoot /var/www/nombre_sitio
+
+ErrorDocument codigo_error /error/nombre_pag.html
+``````
+     * Ej. :
+            DocumentRoot /var/www/nombre_sitio
+
+            ErrorDocument 404 /error/index.html
+
+* Echo esto, en vez de mostrar la página que tenga el servidor por defecto, se mostrará la página establecida por nosotros.
+
+* También se puede poner una url externa si lo deseamos
+
+* Debemos tener en cuenta que esta configuración solo afectará al VirtualHost en cuestión. Si lo queremos hacer para todo el servidor debemos hacerlo en el fichero de configuración predeterminada (localized-error-pages.cong).
+``````
+    $ nano /etc/apache2/conf-available/localized-error-pages.cong
+``````
+* Apache ofrece la posibilidad de, por mediación de la negociación de contenidos, ofrecer difernentes páginas según el idioma del navegador.
+    - Podríamos cambiar las primeras directivas que aparacen y afectarían a todos los sitios web del servidor.
+    - **Más abajo aparecen otras directivas más interesantes**
+
+        1. Nos paramos en el bloque `<IfModule mod_negotiation.c>` y lo descomentamos por completo:
+
+            *  Como vemos se trata de una estructura que permite una configuración dinámica, como si de cualquier otro lenguaje de programación se tratase.
+        2. En este bloque, vemos que se ofrece una directiva de tipo mapa para cada uno de los errores.
+
+            * En la parte de arriba de este bloque, vemos que `/error/` es un alias del directorio donde están nuestras páginas de error:
+                ``````
+                Alias /error/ "/usr/share/apache2/error/"
+                ``````
+            * Podemos ir a cada una de las que desemos modificar.
+        3. Como siempre que hacemos cambios de configuración debemos reiniciar el servicio:
+
+            ``````
+            $ systemctl reset apache2
+            ``````
+
+* En este punto, cuando accedamos a nuestro sitio y surja un error se mostrará la página de error personalizada y según la configuración de idioma del navegador del cliente.
+
+#### Tenemos en cuenta que esta configuración la hemos echo en la configuración disponible: `/etc/apache2/conf-available/`
+
+#### Esto quiere decir que en la configuración activa: `/etc/apache2/conf-enabled/` debemos tener el correspondiente enlace simbólico para que esta sea efectiva.
+- Si no lo tenemos debemos hacer el comando para crearlo (ver apartados anteriores).
+
+
+
+
+
+
+
+
